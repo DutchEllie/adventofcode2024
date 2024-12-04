@@ -18,18 +18,19 @@ import (
 // 	return x >= 0 && x < len(grid[y]) && y >= 0 && y < len(grid)
 // }
 
-func InBounds[T any](v [][]T, i, j int) bool {
-    return i >= 0 && i < len(v) && j >= 0 && j < len(v[i])
+func InBounds[T any](v [][]T, y, x int) bool {
+    return y >= 0 && y < len(v) && x >= 0 && x < len(v[y])
 }
 
-// Again stolen
-func StrReverse(s string) string {
-	runes := []rune(s)
-	for i, j := 0, len(runes)-1; i < j; i, j = i + 1, j - 1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
 
-	return string(runes)
+
+// Stolen
+func StrReverse(s string) string {
+    runes := []rune(s)
+    for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+        runes[i], runes[j] = runes[j], runes[i]
+    }
+    return string(runes)
 }
 
 func WordSearch(grid [][]rune, x, y int, dirDelta DirectionD, word string) bool {
@@ -47,14 +48,15 @@ func WordSearch(grid [][]rune, x, y int, dirDelta DirectionD, word string) bool 
 	// 			// .......
 	// 			// But it could also have another location, depending on if the slice is against a corner or wall
 	// 			// ###################################
-		if !InBounds(grid, x, y) {
+		// if !InBounds(grid, x, y) {
+		if !InBounds(grid, y, x) {
 			// fmt.Println("Not in bounds!")
 			return false
 		}
 
-		if grid[y][x] == rune(word[len(word)-1]) {
-        word = StrReverse(word)
-    }
+		// if grid[y][x] == rune(word[len(word)-1]) {
+    //     word = StrReverse(word)
+    // }
 
 	// fmt.Println("We're on a new one ======================")
 	// printWhichDirection(dirDelta)
@@ -115,10 +117,12 @@ func CountMASXes(grid [][]rune) int {
 				// Now check the something..
 				
 				// Stolen
-				if WordSearch(grid, x, y, dir, "MAS") {
+				// I just flipped x and y in this???
+				// huh??!?!
+				if WordSearch(grid, y, x, dir, "MAS") {
 					newY := y + 2 * dir[0]
-					newDir := DirectionD{dir[0] * -1, dir[1]}
-					if WordSearch(grid, newY, x, newDir, "MAS") {
+					newDir := DirectionStolen{dir[0] * -1, dir[1]}
+					if WordSearchStolen(grid, newY, x, newDir, "MAS") {
 						count++
 					}
 				}
@@ -126,7 +130,34 @@ func CountMASXes(grid [][]rune) int {
 		}
 	}
 
-	return count
+	// HUH WTF???
+	return count / 4
+}
+
+func MasXSearchCount(grid [][]rune) int {
+    dirs := []DirectionStolen{
+        {-1, -1},
+        { 1,  1},
+        {-1,  1},
+        { 1, -1},
+    }
+
+    count := 0
+    for r := 0; r < len(grid); r++ {
+        for c := 0; c < len(grid[r]); c++ {
+            for _, dir := range dirs {
+                if WordSearchStolen(grid, r, c, dir, "MAS") {
+                    nr := r + 2 * dir[0]
+                    nd := DirectionStolen{dir[0] * -1, dir[1]}
+                    if WordSearchStolen(grid, nr, c, nd, "MAS") {
+                        count++
+                    }
+                }
+            }
+        }
+    }
+
+    return count / 4
 }
 
 func readThatInputYo() [][]rune {
