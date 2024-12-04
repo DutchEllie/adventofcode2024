@@ -6,19 +6,6 @@ import (
 	"os"
 )
 
-const testInput = `MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX
-`
-const testResult = 18
-
 // type key struct {
 // 	y int
 // 	x int
@@ -33,6 +20,16 @@ const testResult = 18
 
 func InBounds[T any](v [][]T, i, j int) bool {
     return i >= 0 && i < len(v) && j >= 0 && j < len(v[i])
+}
+
+// Again stolen
+func StrReverse(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i + 1, j - 1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+
+	return string(runes)
 }
 
 func WordSearch(grid [][]rune, x, y int, dirDelta DirectionD, word string) bool {
@@ -54,6 +51,10 @@ func WordSearch(grid [][]rune, x, y int, dirDelta DirectionD, word string) bool 
 			// fmt.Println("Not in bounds!")
 			return false
 		}
+
+		if grid[y][x] == rune(word[len(word)-1]) {
+        word = StrReverse(word)
+    }
 
 	// fmt.Println("We're on a new one ======================")
 	// printWhichDirection(dirDelta)
@@ -101,7 +102,34 @@ func CountXMAS(grid [][]rune) int {
 	return count
 }
 
-func day4_1() string {
+func CountMASXes(grid [][]rune) int {
+	dirDeltas := []DirectionD {
+	// upleft, 	upright, 	downleft,	downright
+		{-1, -1}, {-1,  1}, { 1, -1}, { 1,  1},
+	}
+
+	count := 0
+	for y := 0; y < len(grid); y++ {
+		for x := 0; x < len(grid[y]); x++ {
+			for _, dir := range dirDeltas {
+				// Now check the something..
+				
+				// Stolen
+				if WordSearch(grid, x, y, dir, "MAS") {
+					newY := y + 2 * dir[0]
+					newDir := DirectionD{dir[0] * -1, dir[1]}
+					if WordSearch(grid, newY, x, newDir, "MAS") {
+						count++
+					}
+				}
+			}
+		}
+	}
+
+	return count
+}
+
+func readThatInputYo() [][]rune {
 	file, _ := os.Open("./input-4")
 	defer file.Close()
 
@@ -114,6 +142,19 @@ func day4_1() string {
 	for i, line := range lines {
 		grid[i] = []rune(line)
 	}
+	
+	return grid
+}
+
+func day4_2() string {
+	grid := readThatInputYo()
+
+	return fmt.Sprintf("%d", CountMASXes(grid))
+
+}
+
+func day4_1() string {
+	grid := readThatInputYo()
 
 	return fmt.Sprintf("%d", CountXMAS(grid))
 
@@ -209,7 +250,6 @@ func day4_1() string {
 	// 	}
 	// }
 
-	return ""
 }
 
 // Clamp
@@ -245,10 +285,10 @@ func printWhichDirection(dir DirectionD) {
 	}
 }
 
-func checkForXMAS(bruh *map[int]map[int]string, letter int) {
-	// var word []byte = []byte{'X', 'M', 'A', 'S'}
-	// val, ok := bruh[]
-}
+// func checkForXMAS(bruh *map[int]map[int]string, letter int) {
+// 	// var word []byte = []byte{'X', 'M', 'A', 'S'}
+// 	// val, ok := bruh[]
+// }
 
 // // littleSlice :=
 // // leftValid := true
