@@ -245,12 +245,47 @@ func part1() (p1, p2 int) {
 		// 	return l.IsSorted(rules)
 		// }
 
-		yeet := sort(l.list, rules)
+		// yeet := sort(l.list, rules)
+		yeet := l.list
+		fmt.Printf("yeet: %v\n", yeet)
+
+		slices.SortFunc(yeet, func(i, j int) int {
+			for _, r := range rules {
+				if r.first == i && r.second == j { 
+					return -1 
+				} else if r.first == j && r.second == i {
+					return 1
+				}
+			}
+
+			return 0
+
+
+			firstIndex := slices.Index(l.list, i)
+			secondIndex := slices.Index(l.list, j)
+
+			if firstIndex == -1 || secondIndex == -1 {
+				// fmt.Println("Doesn't contain rule nums")
+				return 0
+			}
+
+			if firstIndex < secondIndex {
+				// Everything is fine
+				// fmt.Println("Already sorted")
+				return -1
+			}
+
+			// fmt.Println("not sorted")
+
+			return 1
+		})
+
+		fmt.Printf("yeet: %v\n", yeet)
 
 
 		// fmt.Println(l.list)
 		// fmt.Println(list)
-		fmt.Println("had a good list this time")
+		// fmt.Println("had a good list this time")
 		correctedIncorrectLists = append(correctedIncorrectLists, List{yeet})
 	}
 
@@ -258,7 +293,7 @@ func part1() (p1, p2 int) {
 
 	for _, testList := range correctedIncorrectLists {
 		if !testList.IsSorted(rules) {
-			// fmt.Println("Not sorted!")
+			fmt.Println("Not sorted!")
 		}
 	}
 
