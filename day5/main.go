@@ -27,7 +27,7 @@ func (r *Rule) IsSorted(l []int) bool {
 	firstIndex := slices.Index(l, r.first)
 	secondIndex := slices.Index(l, r.second)
 
-	if firstIndex == -1 && secondIndex == -1 {
+	if firstIndex == -1 || secondIndex == -1 {
 		// fmt.Println("Doesn't contain rule nums")
 		return true
 	}
@@ -56,7 +56,7 @@ func (r *Rule) CorrectList(l []int) []int {
 	firstIndex := slices.Index(l, r.first)
 	secondIndex := slices.Index(l, r.second)
 
-	if firstIndex == -1 && secondIndex == -1 {
+	if firstIndex == -1 || secondIndex == -1 {
 		// fmt.Println("Doesn't contain rule nums")
 		return l
 	}
@@ -115,36 +115,45 @@ func NewList(l string) List {
 // }
 
 func (l *List) IsSorted(rules []Rule) bool {
-	fmt.Println("Checking a list")
+	// fmt.Println("Checking a list")
 	tmp := l.list
 	for _, r := range rules {
 		s := r.IsSorted(tmp)
 		if s {
-			fmt.Printf("List is sorted: true\n")
+			// fmt.Printf("List is sorted: true\n")
 		} else {
-			fmt.Printf("List is sorted: false\n")
+			// fmt.Printf("List is sorted: false\n")
 			return false
 		}
 	}
 
-	fmt.Println("Returning a true")
+	// fmt.Println("Returning a true")
 	return true
 }
 
 func CheckAndCorrect(list []int, rules []Rule) []int {
 	// Iterate all the rules and check them against the list
-	tmp := make([]int, 0)
-	tmp = list
-	for _, r := range rules {
-		// fmt.Println(tmp)
-		tmp = r.CorrectList(tmp)
-		// fmt.Println(tmp)
+	// tmp := make([]int, 0)
+	// for _, r := range rules {
+	// 	// fmt.Println(tmp)
+	// 	tmp := r.CorrectList(list)
+		
+	// 	// fmt.Println(tmp)
+	// }
+
+	if len(rules) == 1 {
+		tmp := rules[0].CorrectList(list)
+		return tmp
 	}
 
-	return tmp
+	rule, theRest := rules[0], rules[1:]
+	tmp := rule.CorrectList(list)
+
+	// tmp2 := List{tmp}
+	return CheckAndCorrect(tmp, theRest)
 } 
 
-func part1() int {
+func part1() (p1, p2 int) {
 	file, _ := os.Open("./input-5")
 	defer file.Close()
 
@@ -184,15 +193,15 @@ func part1() int {
 	for _, list := range lists {
 		listissortedalready := list.IsSorted(rules)
 		if listissortedalready {
-			fmt.Println("Added list to bruh")
+			// fmt.Println("Added list to bruh")
 			bruh = append(bruh, list)
 		}
 	}
 
-	fmt.Printf("Original list length: %d\n", len(lists))
-	fmt.Printf("Correct list length: %d\n", len(bruh))
+	// fmt.Printf("Original list length: %d\n", len(lists))
+	// fmt.Printf("Correct list length: %d\n", len(bruh))
 
-	p1 := 0
+	p1 = 0
 	for _, list := range bruh {
 		// Index is always uneven, hopefully
 		// If 0 ... 4, there are 5 elements
@@ -209,10 +218,72 @@ func part1() int {
 		p1 += mid
 	}
 
-	return p1
+	p2 = 0
+	incorrectLists := make([]List, 0)
+	for _, l := range lists {
+		if !l.IsSorted(rules) {
+			incorrectLists = append(incorrectLists, l)
+		}
+	}
+
+	fmt.Printf("len(incorrectLists): %v\n", len(incorrectLists))
+	
+	fmt.Printf("(len(incorrectLists) + len(bruh)): %v\n", (len(incorrectLists) + len(bruh)))
+	fmt.Printf("len(lists): %v\n", len(lists))
+
+	correctedIncorrectLists := make([]List, 0)
+	for _, l := range incorrectLists {
+		// list := CheckAndCorrect(l.list, rules)
+		
+		// debug
+		// checkaaah := func(list []int, rules []Rule) []int {
+		// 	tmp := CheckAndCorrect(list, rules)
+		// 	l := 
+		// }
+		// isSortedDebug := func(list *[]int, rules []Rule) bool {
+		// 	l := List{*list}
+		// 	return l.IsSorted(rules)
+		// }
+
+		yeet := sort(l.list, rules)
+
+
+		// fmt.Println(l.list)
+		// fmt.Println(list)
+		fmt.Println("had a good list this time")
+		correctedIncorrectLists = append(correctedIncorrectLists, List{yeet})
+	}
+
+	fmt.Printf("Length of correctedIncorrectLists: %d\n", len(correctedIncorrectLists))
+
+	for _, testList := range correctedIncorrectLists {
+		if !testList.IsSorted(rules) {
+			// fmt.Println("Not sorted!")
+		}
+	}
+
+	for _, l := range correctedIncorrectLists {
+		middle := len(l.list) / 2
+		mid := l.list[middle]
+		p2 += mid
+	}
+
+	return
 }
 
+func sort(list []int, rules []Rule) []int {
+	tmp := CheckAndCorrect(list, rules)
+	l := List{tmp}
+	if !l.IsSorted(rules) {
+		sort(tmp, rules)
+	}
+
+	return tmp
+}
+
+
 func main() {
-	fmt.Printf("Day 5 - 1: %d\n", part1())
+	p1, p2 := part1()
+	fmt.Printf("Day 5 - 1: %d\nDay 5 - 2: %d\n", p1, p2)
 
 }
